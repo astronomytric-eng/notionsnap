@@ -8,12 +8,10 @@ export default function Home() {
     "不要試圖解決所有人的問題。找到一個精準的小痛點，把它做到極致，你的副業就能超越主業。"
   );
   
-  // 樣式主題與尺寸設定
   const [theme, setTheme] = useState<"notion" | "dark" | "sunset">("notion");
   const [aspectRatio, setAspectRatio] = useState<"square" | "landscape">("square");
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // 一鍵下載圖片邏輯
   const handleDownload = async () => {
     if (cardRef.current === null) return;
     try {
@@ -28,76 +26,170 @@ export default function Home() {
     }
   };
 
-  // 主題顏色對照
-  const themeStyles = {
-    notion: "bg-white text-[#37352F] border-[#E9E9E7]",
-    dark: "bg-[#191919] text-[#D4D4D4] border-[#2F2F2F]",
-    sunset: "bg-gradient-to-tr from-amber-100 to-rose-100 text-[#2D2D2D] border-rose-200/50",
+  const getThemeStyle = () => {
+    switch (theme) {
+      case "dark":
+        return {
+          backgroundColor: "#191919",
+          color: "#D4D4D4",
+          borderColor: "#2F2F2F",
+        };
+      case "sunset":
+        return {
+          background: "linear-gradient(to top right, #fef3c7, #ffe4e6)",
+          color: "#2D2D2D",
+          borderColor: "rgba(251, 113, 133, 0.3)",
+        };
+      default:
+        return {
+          backgroundColor: "#ffffff",
+          color: "#37352F",
+          borderColor: "#E9E9E7",
+        };
+    }
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F6F3] text-[#37352F] flex flex-col items-center justify-center p-6 py-12">
-      {/* 頂部標題區 */}
-      <div className="max-w-2xl w-full text-center mb-8">
-        <h1 className="text-4xl font-bold mb-3 flex items-center justify-center gap-2">
-          💡 NotionSnap
-        </h1>
-        <p className="text-[#787774] text-lg">
-          一鍵將 Notion 筆記轉換為高質感社群圖卡
-        </p>
-      </div>
+    <main
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#F7F6F3",
+        color: "#37352F",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px 16px",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      }}
+    >
+      <div style={{ maxWidth: "560px", width: "100%" }}>
+        {/* 頁頭 */}
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <h1
+            style={{
+              fontSize: "32px",
+              fontWeight: "bold",
+              marginBottom: "8px",
+            }}
+          >
+            💡 NotionSnap
+          </h1>
+          <p style={{ color: "#787774", fontSize: "16px", margin: 0 }}>
+            一鍵將 Notion 筆記轉換為高質感社群圖卡
+          </p>
+        </div>
 
-      {/* 主要工作區 */}
-      <div className="max-w-xl w-full space-y-6">
         {/* 輸入框 */}
-        <div className="bg-white p-4 rounded-xl border border-[#E9E9E7] shadow-sm">
-          <label className="block text-xs font-semibold text-[#787774] mb-2 uppercase tracking-wider">
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            padding: "16px",
+            borderRadius: "12px",
+            border: "1px solid #E9E9E7",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            marginBottom: "20px",
+          }}
+        >
+          <label
+            style={{
+              display: "block",
+              fontSize: "12px",
+              fontWeight: "600",
+              color: "#787774",
+              marginBottom: "8px",
+              letterSpacing: "0.5px",
+            }}
+          >
             輸入文字內容
           </label>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={4}
-            className="w-full p-2 border-none focus:outline-none resize-none text-base bg-transparent text-[#37352F]"
+            style={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              resize: "none",
+              fontSize: "16px",
+              backgroundColor: "transparent",
+              color: "#37352F",
+              boxSizing: "border-box",
+            }}
             placeholder="請輸入欲轉換為卡片的文字..."
           />
         </div>
 
-        {/* 風格與尺寸控制區 */}
-        <div className="bg-white p-4 rounded-xl border border-[#E9E9E7] shadow-sm space-y-4">
+        {/* 控制面板 */}
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            padding: "16px",
+            borderRadius: "12px",
+            border: "1px solid #E9E9E7",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            marginBottom: "24px",
+          }}
+        >
           {/* 主題切換 */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#787774] uppercase tracking-wider">
+          <div
+            style={{
+              display: "flex",
+              justifySpace: "space-between",
+              alignItems: "center",
+              marginBottom: "12px",
+            }}
+          >
+            <span
+              style={{ fontSize: "12px", fontWeight: "600", color: "#787774" }}
+            >
               風格主題：
             </span>
-            <div className="flex gap-2">
+            <div style={{ display: "flex", gap: "8px" }}>
               <button
                 onClick={() => setTheme("notion")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  theme === "notion"
-                    ? "border-[#37352F] bg-[#37352F] text-white"
-                    : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: theme === "notion" ? "#37352F" : "#e5e7eb",
+                  backgroundColor: theme === "notion" ? "#37352F" : "#f9fafb",
+                  color: theme === "notion" ? "#ffffff" : "#4b5563",
+                }}
               >
                 📄 經典 Notion
               </button>
               <button
                 onClick={() => setTheme("dark")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  theme === "dark"
-                    ? "border-black bg-black text-white"
-                    : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: theme === "dark" ? "#000000" : "#e5e7eb",
+                  backgroundColor: theme === "dark" ? "#000000" : "#f9fafb",
+                  color: theme === "dark" ? "#ffffff" : "#4b5563",
+                }}
               >
                 🌙 暗黑模式
               </button>
               <button
                 onClick={() => setTheme("sunset")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  theme === "sunset"
-                    ? "border-rose-400 bg-rose-400 text-white"
-                    : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: theme === "sunset" ? "#fb7185" : "#e5e7eb",
+                  backgroundColor: theme === "sunset" ? "#fb7185" : "#f9fafb",
+                  color: theme === "sunset" ? "#ffffff" : "#4b5563",
+                }}
               >
                 🌅 暖陽霞光
               </button>
@@ -105,28 +197,51 @@ export default function Home() {
           </div>
 
           {/* 尺寸切換 */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <span className="text-xs font-semibold text-[#787774] uppercase tracking-wider">
+          <div
+            style={{
+              display: "flex",
+              justifySpace: "space-between",
+              alignItems: "center",
+              paddingTop: "12px",
+              borderTop: "1px solid #f3f4f6",
+            }}
+          >
+            <span
+              style={{ fontSize: "12px", fontWeight: "600", color: "#787774" }}
+            >
               卡片尺寸：
             </span>
-            <div className="flex gap-2">
+            <div style={{ display: "flex", gap: "8px" }}>
               <button
                 onClick={() => setAspectRatio("square")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  aspectRatio === "square"
-                    ? "border-[#37352F] bg-[#37352F] text-white"
-                    : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: aspectRatio === "square" ? "#37352F" : "#e5e7eb",
+                  backgroundColor:
+                    aspectRatio === "square" ? "#37352F" : "#f9fafb",
+                  color: aspectRatio === "square" ? "#ffffff" : "#4b5563",
+                }}
               >
-                🔲 1:1 正方形 (IG/Threads)
+                🔲 1:1 正方形
               </button>
               <button
                 onClick={() => setAspectRatio("landscape")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  aspectRatio === "landscape"
-                    ? "border-[#37352F] bg-[#37352F] text-white"
-                    : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor:
+                    aspectRatio === "landscape" ? "#37352F" : "#e5e7eb",
+                  backgroundColor:
+                    aspectRatio === "landscape" ? "#37352F" : "#f9fafb",
+                  color: aspectRatio === "landscape" ? "#ffffff" : "#4b5563",
+                }}
               >
                 🖼️ 橫版卡片
               </button>
@@ -134,22 +249,62 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 卡片預覽區 */}
-        <div className="mt-6 flex flex-col items-center">
-          <p className="text-xs font-semibold text-[#787774] mb-3 uppercase tracking-wider text-center">
+        {/* 卡片預覽 */}
+        <div style={{ marginBottom: "20px" }}>
+          <p
+            style={{
+              fontSize: "12px",
+              fontWeight: "600",
+              color: "#787774",
+              marginBottom: "8px",
+              textAlign: "center",
+            }}
+          >
             卡片即時預覽
           </p>
           <div
             ref={cardRef}
-            className={`p-8 rounded-2xl border shadow-md relative flex flex-col justify-between transition-all w-full ${
-              aspectRatio === "square" ? "aspect-square" : "min-h-[220px]"
-            } ${themeStyles[theme]}`}
+            style={{
+              padding: "32px",
+              borderRadius: "16px",
+              border: "1px solid",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              boxSizing: "border-box",
+              width: "100%",
+              aspectRatio: aspectRatio === "square" ? "1 / 1" : "auto",
+              minHeight: aspectRatio === "landscape" ? "220px" : "auto",
+              ...getThemeStyle(),
+            }}
           >
-            <div className="text-lg leading-relaxed font-normal whitespace-pre-wrap flex-1 flex items-center">
+            <div
+              style={{
+                fontSize: "18px",
+                lineHeight: "1.6",
+                whiteSpace: "pre-wrap",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               {text || "請在上方輸入文字..."}
             </div>
-            <div className="mt-6 flex justify-end items-center">
-              <span className="text-xs opacity-40 font-mono tracking-wide">
+            <div
+              style={{
+                marginTop: "24px",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  opacity: 0.4,
+                  fontFamily: "monospace",
+                }}
+              >
                 Made with NotionSnap
               </span>
             </div>
@@ -159,7 +314,18 @@ export default function Home() {
         {/* 下載按鈕 */}
         <button
           onClick={handleDownload}
-          className="w-full bg-[#37352F] text-white py-3.5 rounded-xl font-medium shadow-md hover:bg-[#23221E] active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2 text-base"
+          style={{
+            width: "100%",
+            backgroundColor: "#37352F",
+            color: "#ffffff",
+            padding: "14px",
+            borderRadius: "12px",
+            fontSize: "16px",
+            fontWeight: "500",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+          }}
         >
           📥 一鍵下載 PNG 圖卡
         </button>

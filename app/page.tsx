@@ -137,7 +137,7 @@ export default function Home() {
           <div
             style={{
               display: "flex",
-              justifySpace: "space-between",
+              justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "12px",
             }}
@@ -200,7 +200,7 @@ export default function Home() {
           <div
             style={{
               display: "flex",
-              justifySpace: "space-between",
+              justifyContent: "space-between",
               alignItems: "center",
               paddingTop: "12px",
               borderTop: "1px solid #f3f4f6",

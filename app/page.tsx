@@ -3,15 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { toPng, toBlob } from "html-to-image";
 
-const QUOTES = [
-  "不要試圖解決所有人的問題。找到一個精準的小痛點，把它做到極致，你的副業就能超越主業。",
-  "種一棵樹最好的時間是十年前，其次就是現在。",
-  "簡潔是智慧的靈魂，也是優秀產品的唯一標準。",
-  "專注於提供價值，商業模式自然會在過程中浮現。",
-  "建立個人品牌的本質，就是持續輸出有價值的內容並保持真誠。",
-  "執行力就是最好的天賦，想到了就立刻去驗證。"
-];
-
 export default function Home() {
   const [text, setText] = useState("");
   const [author, setAuthor] = useState("");
@@ -21,18 +12,44 @@ export default function Home() {
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
   const [aspectRatio, setAspectRatio] = useState<"square" | "landscape">("square");
   const [copied, setCopied] = useState(false);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // 抓取萬句靈感 API (Hitokoto 一言 API)
+  const fetchRandomQuote = async () => {
+    setIsLoadingQuote(true);
+    try {
+      const res = await fetch("https://v1.hitokoto.cn/?c=d&c=e&c=f&c=h&c=i&c=j&c=k");
+      const data = await res.json();
+      if (data && data.hitokoto) {
+        const quoteText = data.hitokoto;
+        const quoteFrom = data.from_who ? `@${data.from_who}` : data.from ? `@${data.from}` : "@notionsnap";
+        handleTextChange(quoteText);
+        handleAuthorChange(quoteFrom);
+      }
+    } catch (err) {
+      console.error("抓取靈感失敗：", err);
+      // 備用金句
+      handleTextChange("不要試圖解決所有人的問題。找到一個精準的小痛點，把它做到極致，你的副業就能超越主業。");
+      handleAuthorChange("@notionsnap");
+    } finally {
+      setIsLoadingQuote(false);
+    }
+  };
 
   // 初始化讀取 LocalStorage 自動記憶內容
   useEffect(() => {
     const savedText = localStorage.getItem("notionsnap_text");
     const savedAuthor = localStorage.getItem("notionsnap_author");
-    
-    setText(savedText !== null ? savedText : QUOTES[0]);
-    setAuthor(savedAuthor !== null ? savedAuthor : "@notionsnap");
+
+    if (savedText) {
+      setText(savedText);
+      setAuthor(savedAuthor || "@notionsnap");
+    } else {
+      fetchRandomQuote();
+    }
   }, []);
 
-  // 當文字或署名改變時，自動寫入記憶
   const handleTextChange = (val: string) => {
     setText(val);
     localStorage.setItem("notionsnap_text", val);
@@ -41,12 +58,6 @@ export default function Home() {
   const handleAuthorChange = (val: string) => {
     setAuthor(val);
     localStorage.setItem("notionsnap_author", val);
-  };
-
-  // 隨機靈感按鈕
-  const handleRandomQuote = () => {
-    const random = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    handleTextChange(random);
   };
 
   const handleDownload = async () => {
@@ -178,7 +189,8 @@ export default function Home() {
               文字內容
             </label>
             <button
-              onClick={handleRandomQuote}
+              onClick={fetchRandomQuote}
+              disabled={isLoadingQuote}
               style={{
                 backgroundColor: "#f3f4f6",
                 border: "none",
@@ -187,10 +199,11 @@ export default function Home() {
                 fontSize: "11px",
                 fontWeight: "500",
                 color: "#4b5563",
-                cursor: "pointer",
+                cursor: isLoadingQuote ? "wait" : "pointer",
+                opacity: isLoadingQuote ? 0.6 : 1,
               }}
             >
-              ✨ 隨機靈感
+              {isLoadingQuote ? "🎲 載入靈感中..." : "✨ 隨機萬句靈感"}
             </button>
           </div>
 

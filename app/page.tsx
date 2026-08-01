@@ -1,13 +1,20 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toPng, toBlob } from "html-to-image";
 
+const QUOTES = [
+  "不要試圖解決所有人的問題。找到一個精準的小痛點，把它做到極致，你的副業就能超越主業。",
+  "種一棵樹最好的時間是十年前，其次就是現在。",
+  "簡潔是智慧的靈魂，也是優秀產品的唯一標準。",
+  "專注於提供價值，商業模式自然會在過程中浮現。",
+  "建立個人品牌的本質，就是持續輸出有價值的內容並保持真誠。",
+  "執行力就是最好的天賦，想到了就立刻去驗證。"
+];
+
 export default function Home() {
-  const [text, setText] = useState(
-    "不要試圖解決所有人的問題。找到一個精準的小痛點，把它做到極致，你的副業就能超越主業。"
-  );
-  const [author, setAuthor] = useState("@notionsnap");
+  const [text, setText] = useState("");
+  const [author, setAuthor] = useState("");
   const [theme, setTheme] = useState<"notion" | "dark" | "sunset" | "morandi" | "midnight">("notion");
   const [fontStyle, setFontStyle] = useState<"sans" | "serif" | "mono">("sans");
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
@@ -15,6 +22,32 @@ export default function Home() {
   const [aspectRatio, setAspectRatio] = useState<"square" | "landscape">("square");
   const [copied, setCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // 初始化讀取 LocalStorage 自動記憶內容
+  useEffect(() => {
+    const savedText = localStorage.getItem("notionsnap_text");
+    const savedAuthor = localStorage.getItem("notionsnap_author");
+    
+    setText(savedText !== null ? savedText : QUOTES[0]);
+    setAuthor(savedAuthor !== null ? savedAuthor : "@notionsnap");
+  }, []);
+
+  // 當文字或署名改變時，自動寫入記憶
+  const handleTextChange = (val: string) => {
+    setText(val);
+    localStorage.setItem("notionsnap_text", val);
+  };
+
+  const handleAuthorChange = (val: string) => {
+    setAuthor(val);
+    localStorage.setItem("notionsnap_author", val);
+  };
+
+  // 隨機靈感按鈕
+  const handleRandomQuote = () => {
+    const random = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    handleTextChange(random);
+  };
 
   const handleDownload = async () => {
     if (cardRef.current === null) return;
@@ -140,12 +173,30 @@ export default function Home() {
             marginBottom: "16px",
           }}
         >
-          <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#787774", marginBottom: "8px" }}>
-            文字內容
-          </label>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "600", color: "#787774" }}>
+              文字內容
+            </label>
+            <button
+              onClick={handleRandomQuote}
+              style={{
+                backgroundColor: "#f3f4f6",
+                border: "none",
+                borderRadius: "4px",
+                padding: "3px 8px",
+                fontSize: "11px",
+                fontWeight: "500",
+                color: "#4b5563",
+                cursor: "pointer",
+              }}
+            >
+              ✨ 隨機靈感
+            </button>
+          </div>
+
           <textarea
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => handleTextChange(e.target.value)}
             rows={4}
             style={{
               width: "100%",
@@ -166,7 +217,7 @@ export default function Home() {
             <input
               type="text"
               value={author}
-              onChange={(e) => setAuthor(e.target.value)}
+              onChange={(e) => handleAuthorChange(e.target.value)}
               placeholder="例如 @your_name"
               style={{
                 flex: 1,

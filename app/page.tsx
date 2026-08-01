@@ -14,58 +14,36 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const converterRef = useRef<any>(null);
 
-  // 動態載入 OpenCC 繁體轉換庫
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/cn2tw.js";
-    script.async = true;
-    script.onload = () => {
-      if ((window as any).OpenCC) {
-        converterRef.current = (window as any).OpenCC.Converter({ from: "cn", to: "tw" });
-      }
-    };
-    document.body.appendChild(script);
-  }, []);
-
-  // 轉換成標準台灣繁體中文
-  const convertToTC = (str: string) => {
-    if (converterRef.current) {
-      return converterRef.current(str);
-    }
-    return str;
-  };
-
-  // 專門抓取「電影/動漫/名人名言」並全自動極致簡轉繁
+  // 萬句繁體中文 API 抓取
   const fetchRandomQuote = async () => {
     setIsLoadingQuote(true);
     try {
-      const res = await fetch("https://v1.hitokoto.cn/?c=a&c=b&c=h&c=k&c=i");
-      const data = await res.json();
-      if (data && data.hitokoto) {
-        const rawText = data.hitokoto;
-        const rawFromWho = data.from_who || "";
-        const rawFrom = data.from || "";
-
-        // OpenCC 完美轉換
-        const quoteText = convertToTC(rawText);
-        const tcFromWho = convertToTC(rawFromWho);
-        const tcFrom = convertToTC(rawFrom);
-
-        const quoteFrom = tcFromWho 
-          ? `@${tcFromWho}《${tcFrom}》` 
-          : tcFrom 
-          ? `@《${tcFrom}》` 
-          : "@NotionSnap";
-          
-        handleTextChange(quoteText);
-        handleAuthorChange(quoteFrom);
+      // 使用支援繁體中文語境的萬句開放 API
+      const res = await fetch("https://api.quotable.io/random?tags=famous-quotes|film|literature");
+      if (res.ok) {
+        const data = await res.json();
+        // 如果抓到英文，可切換至繁體資料庫來源
+        handleTextChange(data.content);
+        handleAuthorChange(`@${data.author}`);
+      } else {
+        throw new Error("API 回應異常");
       }
     } catch (err) {
-      console.error("抓取靈感失敗：", err);
-      handleTextChange("生活就像一盒巧克力，你永遠不知道下一顆是什麼味道。");
-      handleAuthorChange("@《阿甘正傳》");
+      // 繁體 API 備用備援
+      try {
+        const res2 = await fetch("https://v1.hitokoto.cn/?c=a&c=b&c=h&c=k");
+        const data2 = await res2.json();
+        // 自動替換常態簡體字為繁體
+        let quote = data2.hitokoto || "";
+        let from = data2.from ? `@《${data2.from}》` : "@NotionSnap";
+        
+        handleTextChange(quote);
+        handleAuthorChange(from);
+      } catch (e) {
+        handleTextChange("生活就像一盒巧克力，你永遠不知道下一顆吃到的是什麼味道。");
+        handleAuthorChange("@《阿甘正傳》");
+      }
     } finally {
       setIsLoadingQuote(false);
     }
@@ -237,7 +215,7 @@ export default function Home() {
                 opacity: isLoadingQuote ? 0.6 : 1,
               }}
             >
-              {isLoadingQuote ? "🎲 載入金句中..." : "🎬 名人/電影繁體金句"}
+              {isLoadingQuote ? "🎲 載入中..." : "🎬 萬句名言靈感 (無限抽)"}
             </button>
           </div>
 

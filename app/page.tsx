@@ -15,23 +15,28 @@ export default function Home() {
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // 抓取萬句靈感 API (Hitokoto 一言 API)
+  // 專門抓取「電影/動漫/名人名言」的 API 參數 (c=a 動漫, c=b 漫畫, c=h 影視, c=k 哲學, c=i 詩詞/名言)
   const fetchRandomQuote = async () => {
     setIsLoadingQuote(true);
     try {
-      const res = await fetch("https://v1.hitokoto.cn/?c=d&c=e&c=f&c=h&c=i&c=j&c=k");
+      const res = await fetch("https://v1.hitokoto.cn/?c=a&c=b&c=h&c=k&c=i");
       const data = await res.json();
       if (data && data.hitokoto) {
         const quoteText = data.hitokoto;
-        const quoteFrom = data.from_who ? `@${data.from_who}` : data.from ? `@${data.from}` : "@notionsnap";
+        // 優先顯示作者或作品來源
+        const quoteFrom = data.from_who 
+          ? `@${data.from_who}《${data.from}》` 
+          : data.from 
+          ? `@《${data.from}》` 
+          : "@NotionSnap";
+          
         handleTextChange(quoteText);
         handleAuthorChange(quoteFrom);
       }
     } catch (err) {
       console.error("抓取靈感失敗：", err);
-      // 備用金句
-      handleTextChange("不要試圖解決所有人的問題。找到一個精準的小痛點，把它做到極致，你的副業就能超越主業。");
-      handleAuthorChange("@notionsnap");
+      handleTextChange("生活就像一盒巧克力，你永遠不知道下一顆是什麼味道。");
+      handleAuthorChange("@《阿甘正傳》");
     } finally {
       setIsLoadingQuote(false);
     }
@@ -44,7 +49,7 @@ export default function Home() {
 
     if (savedText) {
       setText(savedText);
-      setAuthor(savedAuthor || "@notionsnap");
+      setAuthor(savedAuthor || "@NotionSnap");
     } else {
       fetchRandomQuote();
     }
@@ -203,7 +208,7 @@ export default function Home() {
                 opacity: isLoadingQuote ? 0.6 : 1,
               }}
             >
-              {isLoadingQuote ? "🎲 載入靈感中..." : "✨ 隨機萬句靈感"}
+              {isLoadingQuote ? "🎲 載入金句中..." : "🎬 名人/電影經典金句"}
             </button>
           </div>
 

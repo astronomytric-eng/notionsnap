@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { toPng } from "html-to-image";
+import { useState, useRef } from "react";
+import { toPng, toBlob } from "html-to-image";
 
 export default function Home() {
   const [text, setText] = useState(
@@ -10,7 +10,10 @@ export default function Home() {
   const [author, setAuthor] = useState("@notionsnap");
   const [theme, setTheme] = useState<"notion" | "dark" | "sunset" | "morandi" | "midnight">("notion");
   const [fontStyle, setFontStyle] = useState<"sans" | "serif" | "mono">("sans");
+  const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
+  const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
   const [aspectRatio, setAspectRatio] = useState<"square" | "landscape">("square");
+  const [copied, setCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
@@ -24,6 +27,23 @@ export default function Home() {
     } catch (err) {
       console.error("下載失敗：", err);
       alert("下載圖片失敗，請重試！");
+    }
+  };
+
+  const handleCopyImage = async () => {
+    if (cardRef.current === null) return;
+    try {
+      const blob = await toBlob(cardRef.current, { cacheBust: true });
+      if (blob) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: blob }),
+        ]);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error("複製失敗：", err);
+      alert("瀏覽器不支援直接複製圖片，請改用「下載 PNG」！");
     }
   };
 
@@ -70,6 +90,17 @@ export default function Home() {
         return '"Fira Code", Monaco, Consolas, monospace';
       default:
         return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    }
+  };
+
+  const getFontSizePx = () => {
+    switch (fontSize) {
+      case "small":
+        return "16px";
+      case "large":
+        return "22px";
+      default:
+        return "19px";
     }
   };
 
@@ -193,73 +224,138 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 字體切換 */}
-          <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: "12px", marginBottom: "12px" }}>
-            <span style={{ fontSize: "12px", fontWeight: "600", color: "#787774", display: "block", marginBottom: "8px" }}>
-              字體風格：
-            </span>
-            <div style={{ display: "flex", gap: "8px" }}>
-              {[
-                { id: "sans", name: "無襯線 (預設)" },
-                { id: "serif", name: "明體 (質感)" },
-                { id: "mono", name: "等寬 (極客)" },
-              ].map((item) => (
+          {/* 字體與對齊 */}
+          <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: "12px", marginBottom: "12px", display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+            <div>
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#787774", display: "block", marginBottom: "8px" }}>
+                字體風格：
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {[
+                  { id: "sans", name: "無襯線" },
+                  { id: "serif", name: "明體" },
+                  { id: "mono", name: "等寬" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setFontStyle(item.id as any)}
+                    style={{
+                      padding: "5px 8px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      border: "1px solid",
+                      borderColor: fontStyle === item.id ? "#37352F" : "#e5e7eb",
+                      backgroundColor: fontStyle === item.id ? "#37352F" : "#f9fafb",
+                      color: fontStyle === item.id ? "#ffffff" : "#4b5563",
+                    }}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#787774", display: "block", marginBottom: "8px" }}>
+                對齊方式：
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {[
+                  { id: "left", name: "⬅️ 靠左" },
+                  { id: "center", name: "↔️ 居中" },
+                  { id: "right", name: "➡️ 靠右" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setTextAlign(item.id as any)}
+                    style={{
+                      padding: "5px 8px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      border: "1px solid",
+                      borderColor: textAlign === item.id ? "#37352F" : "#e5e7eb",
+                      backgroundColor: textAlign === item.id ? "#37352F" : "#f9fafb",
+                      color: textAlign === item.id ? "#ffffff" : "#4b5563",
+                    }}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 尺寸與字級 */}
+          <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: "12px", display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+            <div>
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#787774", display: "block", marginBottom: "8px" }}>
+                卡片尺寸：
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
                 <button
-                  key={item.id}
-                  onClick={() => setFontStyle(item.id as any)}
+                  onClick={() => setAspectRatio("square")}
                   style={{
-                    padding: "5px 10px",
+                    padding: "5px 8px",
                     borderRadius: "6px",
                     fontSize: "12px",
                     cursor: "pointer",
                     border: "1px solid",
-                    borderColor: fontStyle === item.id ? "#37352F" : "#e5e7eb",
-                    backgroundColor: fontStyle === item.id ? "#37352F" : "#f9fafb",
-                    color: fontStyle === item.id ? "#ffffff" : "#4b5563",
+                    borderColor: aspectRatio === "square" ? "#37352F" : "#e5e7eb",
+                    backgroundColor: aspectRatio === "square" ? "#37352F" : "#f9fafb",
+                    color: aspectRatio === "square" ? "#ffffff" : "#4b5563",
                   }}
                 >
-                  {item.name}
+                  🔲 1:1 正方形
                 </button>
-              ))}
+                <button
+                  onClick={() => setAspectRatio("landscape")}
+                  style={{
+                    padding: "5px 8px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    border: "1px solid",
+                    borderColor: aspectRatio === "landscape" ? "#37352F" : "#e5e7eb",
+                    backgroundColor: aspectRatio === "landscape" ? "#37352F" : "#f9fafb",
+                    color: aspectRatio === "landscape" ? "#ffffff" : "#4b5563",
+                  }}
+                >
+                  🖼️ 橫版卡片
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* 尺寸切換 */}
-          <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: "12px" }}>
-            <span style={{ fontSize: "12px", fontWeight: "600", color: "#787774", display: "block", marginBottom: "8px" }}>
-              卡片尺寸：
-            </span>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={() => setAspectRatio("square")}
-                style={{
-                  padding: "5px 10px",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  border: "1px solid",
-                  borderColor: aspectRatio === "square" ? "#37352F" : "#e5e7eb",
-                  backgroundColor: aspectRatio === "square" ? "#37352F" : "#f9fafb",
-                  color: aspectRatio === "square" ? "#ffffff" : "#4b5563",
-                }}
-              >
-                🔲 1:1 正方形
-              </button>
-              <button
-                onClick={() => setAspectRatio("landscape")}
-                style={{
-                  padding: "5px 10px",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  border: "1px solid",
-                  borderColor: aspectRatio === "landscape" ? "#37352F" : "#e5e7eb",
-                  backgroundColor: aspectRatio === "landscape" ? "#37352F" : "#f9fafb",
-                  color: aspectRatio === "landscape" ? "#ffffff" : "#4b5563",
-                }}
-              >
-                🖼️ 橫版卡片
-              </button>
+            <div>
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#787774", display: "block", marginBottom: "8px" }}>
+                字體大小：
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {[
+                  { id: "small", name: "S" },
+                  { id: "medium", name: "M" },
+                  { id: "large", name: "L" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setFontSize(item.id as any)}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      border: "1px solid",
+                      borderColor: fontSize === item.id ? "#37352F" : "#e5e7eb",
+                      backgroundColor: fontSize === item.id ? "#37352F" : "#f9fafb",
+                      color: fontSize === item.id ? "#ffffff" : "#4b5563",
+                    }}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -287,7 +383,18 @@ export default function Home() {
               ...getThemeStyle(),
             }}
           >
-            <div style={{ fontSize: "19px", lineHeight: "1.7", whiteSpace: "pre-wrap", flex: 1, display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                fontSize: getFontSizePx(),
+                lineHeight: "1.7",
+                whiteSpace: "pre-wrap",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: textAlign === "center" ? "center" : textAlign === "right" ? "flex-end" : "flex-start",
+                textAlign: textAlign,
+              }}
+            >
               {text || "請在上方輸入文字..."}
             </div>
             <div style={{ marginTop: "24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -301,24 +408,44 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 下載按鈕 */}
-        <button
-          onClick={handleDownload}
-          style={{
-            width: "100%",
-            backgroundColor: "#37352F",
-            color: "#ffffff",
-            padding: "14px",
-            borderRadius: "12px",
-            fontSize: "15px",
-            fontWeight: "500",
-            border: "none",
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          📥 一鍵下載 PNG 圖卡
-        </button>
+        {/* 按鈕組 */}
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={handleCopyImage}
+            style={{
+              flex: 1,
+              backgroundColor: "#ffffff",
+              color: "#37352F",
+              border: "1px solid #E9E9E7",
+              padding: "14px",
+              borderRadius: "12px",
+              fontSize: "15px",
+              fontWeight: "600",
+              cursor: "pointer",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            }}
+          >
+            {copied ? "✅ 已複製到剪貼簿！" : "📋 複製圖片"}
+          </button>
+          
+          <button
+            onClick={handleDownload}
+            style={{
+              flex: 1,
+              backgroundColor: "#37352F",
+              color: "#ffffff",
+              padding: "14px",
+              borderRadius: "12px",
+              fontSize: "15px",
+              fontWeight: "600",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            }}
+          >
+            📥 下載 PNG
+          </button>
+        </div>
       </div>
     </main>
   );
